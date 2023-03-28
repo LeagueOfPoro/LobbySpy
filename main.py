@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget, QListWidgetItem, QLabel
 from qdarkstyle import load_stylesheet
 
 from ConnectionManager import ConnectionManager
@@ -56,7 +56,37 @@ class MyWindow(QWidget):
             # add the names to the list
             responseJson = response.json()
             for player in responseJson.get("participants", []):
-                self.listNames.addItem(QListWidgetItem(player.get("game_name")))
+                playerName = player.get("name")
+                item = QListWidgetItem(playerName)
+                
+                # create the two buttons for the name
+                buttonMobalytics = QPushButton("Mobalytics", self)
+                buttonMobalytics.setObjectName("yellow_button")
+                buttonMobalytics.clicked.connect(lambda _, n=playerName: self.lookupPlayerMobalytics(n))
+
+                buttonMastery = QPushButton("Mastery", self)
+                buttonMastery.setObjectName("purple_button")
+                buttonMastery.clicked.connect(lambda _, n=playerName: self.lookupPlayerMastery(n))
+                
+                container = QWidget(self)
+                containerLayout = QHBoxLayout(container)
+                containerLayout.setContentsMargins(0, 0, 0, 0)
+                containerLayout.setSpacing(1)
+
+                nameLabel = QLabel(playerName, self)
+                containerLayout.addWidget(nameLabel, 1)
+
+                # add the two buttons to the container
+                buttonLayout = QVBoxLayout()
+                buttonLayout.addWidget(buttonMobalytics)
+                buttonLayout.addWidget(buttonMastery)
+                containerLayout.addLayout(buttonLayout, 1)
+
+                # set the container widget as the widget for the list item
+                item.setSizeHint(container.sizeHint())
+
+                self.listNames.addItem(item)
+                self.listNames.setItemWidget(item, container)
 
     def searchUgg(self):
         # get the names from the list
@@ -72,6 +102,18 @@ class MyWindow(QWidget):
         names = [self.listNames.item(i).text() for i in range(self.listNames.count())]
         # create the url for OP.GG
         url = f"https://www.op.gg/multisearch/{self.clientRegion}?summoners={','.join(names)}" 
+        # open the url in a web browser
+        import webbrowser
+        webbrowser.open(url)
+
+    def lookupPlayerMastery(self, playerName):
+        url = f"https://championmastery.gg/summoner?summoner={playerName}&region={self.clientRegion}" 
+        # open the url in a web browser
+        import webbrowser
+        webbrowser.open(url)
+
+    def lookupPlayerMobalytics(self, playerName):
+        url = f"https://app.mobalytics.gg/lol/profile/{self.clientRegion}/{playerName}/overview" 
         # open the url in a web browser
         import webbrowser
         webbrowser.open(url)
