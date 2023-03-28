@@ -45,7 +45,7 @@ class MyWindow(QWidget):
         vbox.addWidget(self.listNames)
 
         self.setLayout(vbox)
-        self.setWindowTitle("Teammate List")
+        self.setWindowTitle("Lobby Spy")
 
     def getNames(self):
         # send a get request to the server to get the names
